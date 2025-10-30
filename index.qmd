@@ -87,7 +87,7 @@ After installation completes, comment the line back out to avoid reinstalling on
 using Pkg
 lab_dir = dirname(@__FILE__)
 Pkg.activate(lab_dir)
-# Pkg.instantiate() # uncomment this the first time you run the lab to install packages, then comment it back
+#Pkg.instantiate() # uncomment this the first time you run the lab to install packages, then comment it back
 ```
 
 ```{julia}
@@ -228,12 +228,12 @@ end
 # Compute monthly climatologies
 obs_monthly = @chain df_obs_hist begin
     @group_by(month)
-    @summarize(mean_temp = mean(TAVG))
+    @summarize(mean_temp_obs = mean(TAVG))
 end
 
 gcm_monthly = @chain df_gcm_hist begin
     @group_by(month)
-    @summarize(mean_temp = mean(temp))
+    @summarize(mean_temp_gcm = mean(temp))
 end
 ```
 
@@ -247,8 +247,8 @@ let
         ylabel=L"Temperature ($^\circ$C)",
         title="Annual Cycle: Observations vs GCM Historical (1995-2014)",
         xticks=MONTH_LABELS)
-    lines!(ax, obs_monthly.month, obs_monthly.mean_temp, linewidth=2, color=:steelblue, label="Observations")
-    lines!(ax, gcm_monthly.month, gcm_monthly.mean_temp, linewidth=2, color=:coral, label="GCM Historical")
+    lines!(ax, obs_monthly.month, obs_monthly.mean_temp_obs, linewidth=2, color=:steelblue, label="Observations")
+    lines!(ax, gcm_monthly.month, gcm_monthly.mean_temp_gcm, linewidth=2, color=:coral, label="GCM Historical")
     axislegend(ax, position=:lt)
     fig
 end
@@ -277,7 +277,14 @@ Follow these steps:
 :::
 
 ```{julia}
-# Your code here
+
+#Create monthly bias dataframe
+monthly_bias = @chain gcm_monthly begin #Start with first dataframe 
+    @left_join(obs_monthly, month) #Left join second dataframe
+    @mutate(bias = mean_temp_gcm - mean_temp_obs)  #Add new column for bias
+    @select(month, mean_temp_gcm, mean_temp_obs, bias) #Select our columns 
+    @arrange(month) #Arrange by month
+end
 ```
 
 ### Task 3: Implement Quantile-Quantile Mapping
