@@ -306,6 +306,34 @@ fig_bias
 
 ```
 
+Apply delta method function: 
+
+```{julia}
+
+function apply_delta_method(gcm_temps, gcm_dates, monthly_bias)
+    corrected_temps = similar(gcm_temps) #Creates a vector corrected_temps to store results
+    for (index, temp) in enumerate(gcm_temps) #Loop through each variable 
+        date = gcm_dates[index]
+     
+        month_i = month(date) #Uses month(date) to extract the month from each date
+        
+        bias = monthly_bias.bias[month_i]  #look up bias of that month
+        corrected_temps[index] = temp - bias  #Subtract the bias from the temperature
+    end 
+    return corrected_temps
+end
+
+temp_delta = apply_delta_method(df_ssp370_near.temp, df_ssp370_near.date, monthly_bias)
+#df_ssp370_near.temp_delta = temp_delta
+#apply_delta_method(df_ssp370_near.temp, df_ssp370_near.date, monthly_bias)
+bias = monthly_bias.bias
+df_ssp370_near = @chain df_ssp370_near begin
+    #@left_join(temp_delta)
+    @mutate(temp_delta = !!temp_delta)  #Add column we want - wrap in !! so it knows to see it as an outside thing it's referencing 
+end
+
+```
+
 
 ### Task 3: Implement Quantile-Quantile Mapping
 
