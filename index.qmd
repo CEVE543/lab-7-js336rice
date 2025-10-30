@@ -276,16 +276,36 @@ Follow these steps:
 6. Visualize the annual cycle showing historical observations, raw GCM near-term, and delta-corrected near-term temperatures.
 :::
 
+ Make dataframe: 
 ```{julia}
 
 #Create monthly bias dataframe
 monthly_bias = @chain gcm_monthly begin #Start with first dataframe 
     @left_join(obs_monthly, month) #Left join second dataframe
-    @mutate(bias = mean_temp_gcm - mean_temp_obs)  #Add new column for bias
+    @mutate(bias = mean_temp_obs - mean_temp_gcm)  #Add new column for bias
     @select(month, mean_temp_gcm, mean_temp_obs, bias) #Select our columns 
     @arrange(month) #Arrange by month
 end
 ```
+
+Make bar plot: 
+
+```{julia}
+
+fig_bias = Figure(resolution = (800, 350))
+axb = Axis(fig_bias[1, 1];
+    title = "Monthly Temperature Bias",
+    xlabel = "Month",
+    ylabel = L"Temperature Bias ($^\circ$C)",
+    xticks = MONTH_LABELS
+)
+
+barplot!(axb, monthly_bias.month, monthly_bias.bias)
+hlines!(axb, 0)  # horizontal zero line
+fig_bias
+
+```
+
 
 ### Task 3: Implement Quantile-Quantile Mapping
 
