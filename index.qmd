@@ -544,6 +544,33 @@ Delta-corrected (near_monthly_delta.mean_temp): green, dashed line (linestyle=:d
 QQ-mapped (near_monthly_qqmap.mean_temp): purple, dotted line (linestyle=:dot), linewidth=2, label=“QQ-map”
 
 
+Format the plot:
+Set xticks=MONTH_LABELS to show month names
+Title: “Annual Cycle Comparison: All Methods (Near-term 2020-2040)”
+Y-axis label: “Temperature (C)” using LaTeX formatting
+Add legend with axislegend(ax, position=:lt)
+
+```{julia}
+
+let
+    fig = Figure()
+    ax = Axis(fig[1, 1],
+        xlabel="Month",
+        ylabel=L"Temperature ($^\circ$C)",
+        title="Annual Cycle Comparison: All Methods (Near-term 2020-2040)",
+        xticks=MONTH_LABELS)
+    lines!(ax, obs_monthly.month, obs_monthly.mean_temp_obs, linewidth=2.5, color=:black, label="Historical Obs")
+    lines!(ax, near_monthly_raw.month, near_monthly_raw.mean_temp, linewidth=2, color=:coral, label="Raw GCm")
+    lines!(ax, near_monthly_delta.month, near_monthly_delta.mean_delta, linewidth=2, color=:green, linestyle=:dash, label="Delta Corrected")
+    lines!(ax, near_monthly_qqmap.month, near_monthly_qqmap.mean_qq_temp, linewidth=2, color=:purple, linestyle=:dot, label="QQ-map")
+    axislegend(ax, position=:lt)
+    fig
+end
+
+
+```
+
+
 ### Task 5: Reflection
 
 Finally, we reflect on the assumptions, limitations, and appropriate use cases for each bias correction method.
