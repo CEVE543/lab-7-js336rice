@@ -522,9 +522,27 @@ After creating the plot, examine it carefully and consider:
 - What does the QQ-mapped line reveal about this method's treatment of the warming signal?
 :::
 
+
+Compute QQ-mapped monthly climatology: Create near_monthly_qqmap by grouping df_ssp370_near by month and computing the mean of temp_qqmap.
+
+
 ```{julia}
-# Your code here
+
+near_monthly_qqmap = @chain df_ssp370_near begin
+    @group_by(month)
+    @summarize(mean_qq_temp = mean(temp_qqmap))
+end
+
+#display(near_monthly_qqmap)
+
 ```
+
+Create comparison figure: Make a single figure with four lines using different colors and line styles:
+Historical observations (obs_monthly.mean_temp): black, solid line, linewidth=2.5, label=“Historical Obs”
+Raw GCM near-term (near_monthly_raw.mean_temp): coral/red, solid line, linewidth=2, label=“Raw GCM”
+Delta-corrected (near_monthly_delta.mean_temp): green, dashed line (linestyle=:dash), linewidth=2, label=“Delta”
+QQ-mapped (near_monthly_qqmap.mean_temp): purple, dotted line (linestyle=:dot), linewidth=2, label=“QQ-map”
+
 
 ### Task 5: Reflection
 
