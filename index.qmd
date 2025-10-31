@@ -475,8 +475,25 @@ Label axes as “Observed Quantiles (C)” and “GCM Quantiles (C)”
 
 
 ```{julia}
+percentiles = 0.01:0.01:0.99
 
 
+obs_hist_quantiles = quantile(obs_hist_temps)
+gcm_hist_quantiles = quantile(gcm_hist_temps)
+
+let
+    
+    fig = Figure()
+    ax = Axis(fig[1, 1],
+        xlabel=L"Observed Quantiles ($^\circ$C)",
+        ylabel=L"GCM Quantiles ($^\circ$C)",
+        title=" ")
+    scatter!(ax, obs_hist_quantiles, gcm_hist_quantiles, color=:steelblue)
+    lines!(ax, [-20, 40], [-20, 40], linestyle=:dash, color=:coral)
+    aspect = DataAspect()
+ 
+    fig
+end
 
 
 ```
