@@ -519,7 +519,16 @@ Create a single figure showing monthly mean temperature for the near-term period
 After creating the plot, examine it carefully and consider:
 
 - How do the two correction methods differ?
+
+    The Delta method simply assumes a constant average diference between months, and closes up that gap on each data point. Quantile-quantile mapping instead maps each GCM data point to its quantile, and then calls what would be the observed data of that same quantile.  
+
 - What does the QQ-mapped line reveal about this method's treatment of the warming signal?
+
+    The QQ-map line is very similar to our Delta-corrected line!  It shows that this method does a good job of approximating our observations, but it has very similar performance to the Delta method, at least in this case. 
+
+- Which method shows temperatures closer to historical observations? Why might this be problematic for climate impact assessment?
+
+    The two methods are almost too close too call.  In many months, quantile quantile is closer.  This could be problematic for climate impact assesment because if the GCM models are giving us good measurements about how the climate is changing, but we're mapping those back through the quantile of historical observations, then we've pegged the monthly average temperatures our model can produce to those that we've already observed.  Our model could still tell us if temperatures are becoming more extreme, but if the model is showing us a 'new normal' average temperature that's higher than historical temperatures, we might correct that out of the data. 
 :::
 
 
