@@ -528,7 +528,7 @@ After creating the plot, examine it carefully and consider:
 
 - Which method shows temperatures closer to historical observations? Why might this be problematic for climate impact assessment?
 
-    The two methods are almost too close too call.  In many months, quantile quantile is closer.  This could be problematic for climate impact assesment because if the GCM models are giving us good measurements about how the climate is changing, but we're mapping those back through the quantile of historical observations, then we've pegged the monthly average temperatures our model can produce to those that we've already observed.  Our model could still tell us if temperatures are becoming more extreme, but if the model is showing us a 'new normal' average temperature that's higher than historical temperatures, we might correct that out of the data. 
+    The two methods are almost too close too call.  In many months, delta corrected is closer. This might be problematic for climate impact assesments because if we're only correcting with a constant value, we might not accurately represent how the climate changes over time, since the constant we're correcting with isn't changing. 
 :::
 
 
