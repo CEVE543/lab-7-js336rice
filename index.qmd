@@ -318,7 +318,7 @@ function apply_delta_method(gcm_temps, gcm_dates, monthly_bias)
         month_i = month(date) #Uses month(date) to extract the month from each date
         
         bias = monthly_bias.bias[month_i]  #look up bias of that month
-        corrected_temps[index] = temp - bias  #Subtract the bias from the temperature
+        corrected_temps[index] = temp + bias  #Subtract the bias from the temperature
     end 
     return corrected_temps
 end
@@ -333,6 +333,51 @@ df_ssp370_near = @chain df_ssp370_near begin
 end
 
 ```
+
+
+Create near_monthly_raw and near_monthly_delta DataFrames by grouping df_ssp370_near by month and computing the mean of temp and temp_delta respectively.
+
+```{julia}
+
+near_monthly_raw = @chain df_ssp370_near begin
+    @group_by(month)
+    @summarize(mean_temp = mean(temp))
+end
+
+near_monthly_delta = @chain df_ssp370_near begin
+    @group_by(month)
+    @summarize(mean_delta = mean(temp_delta))
+end
+
+```
+
+Create comparison plot: Make a figure showing three lines (use lines!() for each):
+obs_monthly (blue, labeled “Historical Obs”)
+near_monthly_raw (coral/red, labeled “GCM Raw”)
+near_monthly_delta (green with dashed linestyle, labeled “Delta Corrected”)
+Set xticks=MONTH_LABELS, add a legend with axislegend(), and title it “Delta Method: Annual Cycle for SSP3-7.0 Near-Term (2020-2040)”.
+
+
+```{julia}
+
+let
+    fig = Figure()
+    ax = Axis(fig[1, 1],
+        xlabel="Month",
+        ylabel=L"Temperature ($^\circ$C)",
+        title="Delta Method: Annual Cycle for SSP3-7.0 Near-Term (2020-2040)",
+        xticks=MONTH_LABELS)
+    lines!(ax, obs_monthly.month, obs_monthly.mean_temp_obs, linewidth=2, color=:steelblue, label="Historical Obs")
+    lines!(ax, near_monthly_raw.month, near_monthly_raw.mean_temp, linewidth=2, color=:coral, label="GCM Raw")
+    lines!(ax, near_monthly_delta.month, near_monthly_delta.mean_delta, linewidth=2, color=:green, linestyle=:dash, label="Delta Corrected")
+    axislegend(ax, position=:lt)
+    fig
+end
+
+
+```
+
+
 
 
 ### Task 3: Implement Quantile-Quantile Mapping
@@ -365,9 +410,78 @@ Follow these steps:
 :::
 :::
 
+
+Extract temperature vectors: Create obs_hist_temps by converting df_obs_hist.TAVG to Float64, and create gcm_hist_temps from df_gcm_hist.temp.
+
 ```{julia}
-# Your code here
+
+obs_hist_temps = Float64.(df_obs_hist.TAVG)
+gcm_hist_temps = Float64.(df_gcm_hist.temp)
+
 ```
+
+Fit empirical CDFs: Use ecdf() from StatsBase.jl to create ecdf_obs and ecdf_gcm from the historical data.
+
+```{julia}
+
+ecdf_obs = ecdf(obs_hist_temps)
+ecdf_gcm = ecdf(gcm_hist_temps)
+
+```
+
+Write the mapping function: Implement apply_qqmap_empirical(gcm_temps, ecdf_gcm, obs_hist_temps) that:
+Creates a vector corrected_temps to store results
+Loops through each temperature value in gcm_temps
+Finds its percentile p in the GCM distribution using ecdf_gcm(gcm_temps[i])
+Clamps p to [0.001, 0.999] using clamp(p, 0.001, 0.999)
+Maps to the same percentile in observations using quantile(obs_hist_temps, p)
+
+Apply the correction: Add a new column temp_qqmap to df_ssp370_near by calling your function with df_ssp370_near.temp, ecdf_gcm, and obs_hist_temps.
+
+
+```{julia}
+
+function apply_qqmap_empirical(gcm_temps, ecdf_gcm, obs_hist_temps)
+
+    corrected_temps = similar(gcm_temps)
+    for (index, temp) in enumerate(gcm_temps) #Loop through each variable 
+        p = ecdf_gcm(temp) #Finds its percentile p in the GCM distribution using ecdf_gcm(gcm_temps[i])
+        p_clamped = clamp(p, 0.001, 0.999)
+        obs_quantile = quantile(obs_hist_temps, p)
+        corrected_temps[index] = obs_quantile
+    end
+    return corrected_temps
+
+end
+
+
+temp_qqmap = apply_qqmap_empirical(df_ssp370_near.temp, ecdf_gcm, obs_hist_temps)
+df_ssp370_near = @chain df_ssp370_near begin
+    #@left_join(temp_delta)
+    @mutate(temp_qqmap = !!temp_qqmap)  #Add column we want - wrap in !! so it knows to see it as an outside thing it's referencing 
+end
+
+
+```
+
+
+Create QQ-plot:
+Define percentiles = 0.01:0.01:0.99
+Compute obs_quantiles and gcm_hist_quantiles using quantile() for each dataset
+Create a scatter plot with obs_quantiles on the x-axis and gcm_hist_quantiles on the y-axis
+Add a 1:1 reference line using lines!(ax, [-20, 40], [-20, 40], ...) with dashed linestyle
+Use aspect=DataAspect() to make the plot square
+Label axes as “Observed Quantiles (C)” and “GCM Quantiles (C)”
+
+
+```{julia}
+
+
+
+
+```
+
+
 
 ### Task 4: Compare Methods
 
