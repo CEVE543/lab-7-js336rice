@@ -596,11 +596,15 @@ Write brief responses (2-3 sentences each) to the following questions:
 
 #### Method Selection for Urban Heat Management
 
-*Your response here*
+We're hoping for temperatures to change over time, so I'd recommend Quantile-Quantile mapping.  This way, if the characheristics of urban temperatures are changed, we can have a system that's more flexible in its ability to adapt to that and might better represent extreme values, as opposed to the delta method, which relies on a constant correction value. 
 
 #### Appropriateness of QQ-Mapping for Temperature
 
-*Your response here*
+In the paper, if the frequency of rainfall events is too high, then events below a certain threshold are discarded, and QQ-mapping is performed on the events above that threshold. 
+
+This wouldn't make sense for temperature, because temperature is not an event that happens only on certain days, like rainfall. There's no such thing as a "no temperature day" the way that there is a "no rain day". If we got rid of temperature measurements above or below a certain threshold, we wouldn't be correcting for the frequency of anything, we'd just now have days with no temperature.  This is why it makes sense to correct the full distribution for temperature. 
+
+The delta method might be more appropriate than QQ-mapping when a constant gap is a good representation of the bias in your model, or in your measurements. For example, if you're simulating tidal data, and your model is consistently under or over-estimating by the same values, or you want to adjust your pre-exisiting accurate model to a new, higher or lower guage location. 
 
 ## References
 
